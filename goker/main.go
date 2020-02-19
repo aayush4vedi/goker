@@ -19,6 +19,14 @@ func main() {
 	p2.TwoCards, deck = goker.GetHand(n, deck)
 	table, deck = goker.GetHand(m, deck)
 
-	winner := goker.GetWinner(p1, p2, table)
-	fmt.Printf("Player %v won!\n", winner)
+	fmt.Printf(">> p1 cards: ")
+	goker.PrintCards(p1.TwoCards)
+	fmt.Printf(">> p2 cards: ")
+	goker.PrintCards(p2.TwoCards)
+	fmt.Printf(">> table cards: ")
+	goker.PrintCards(table)
+
+	winner, handType, hand := goker.GetWinner(p1, p2, table)
+	fmt.Printf("Player %v won due to higher hand: %v - ", winner, handType)
+	goker.PrintCards(hand)
 }

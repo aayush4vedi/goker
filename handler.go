@@ -87,6 +87,12 @@ type Player struct {
 	SevenCards Hand
 }
 
+type Result struct {
+	HandType string
+	Score    float64
+	Cards    []Card
+}
+
 func PrintCards(cards []Card) {
 	fmt.Printf("[")
 	for _, card := range cards {
@@ -173,7 +179,7 @@ func nOfSameSuit(h Hand, n int) ([]Card, bool) {
 		m[h[i].Suit] = append(m[h[i].Suit], h[i])
 		if len(m[h[i].Suit]) == n {
 			sort.Slice(m[h[i].Suit], Less(m[h[i].Suit]))
-			return m[h[i].Suit] , true
+			return m[h[i].Suit], true
 		}
 	}
 	return nil, false
@@ -185,7 +191,7 @@ func nOfSameRank(h Hand, n int) ([]Card, bool) {
 		m[h[i].Rank] = append(m[h[i].Rank], h[i])
 		if len(m[h[i].Rank]) == n {
 			sort.Slice(m[h[i].Rank], Less(m[h[i].Rank]))
-			return m[h[i].Rank] , true
+			return m[h[i].Rank], true
 		}
 	}
 	return nil, false
@@ -201,7 +207,7 @@ func nPair(h Hand, n int) ([]Card, bool) {
 			if cnt == n {
 				return ret, true
 			}
-		}else{
+		} else {
 			cnt = 0
 			ret = nil
 		}
@@ -227,7 +233,6 @@ func (h Hand) contains(card Card) bool {
 	return false
 }
 
-
 func nonRepeatingCards(h Hand) Hand {
 	var ret Hand
 	m := make(map[Rank]bool)
@@ -240,19 +245,27 @@ func nonRepeatingCards(h Hand) Hand {
 	return ret
 }
 
-func checkRoyalFlushForSuit(h Hand, s Suit) bool {
+func checkRoyalFlushForSuit(h Hand, s Suit) ([]Card, bool) {
 	if h.contains(Card{Suit: s, Rank: Ten}) && h.contains(Card{Suit: s, Rank: Jack}) && h.contains(Card{Suit: s, Rank: Queen}) && h.contains(Card{Suit: s, Rank: King}) && h.contains(Card{Suit: s, Rank: Ace}) {
-		return true
+		return []Card{
+			Card{Suit: s, Rank: Ten},
+			Card{Suit: s, Rank: Jack},
+			Card{Suit: s, Rank: Queen},
+			Card{Suit: s, Rank: King},
+			Card{Suit: s, Rank: Ace},
+		}, true
 	}
-	return false
+	return []Card(nil), false
 }
 
 //900-RoyalFlush
-func isRoyalFlush(h Hand) bool {
-	if checkRoyalFlushForSuit(h, Spade) || checkRoyalFlushForSuit(h, Club) || checkRoyalFlushForSuit(h, Heart) || checkRoyalFlushForSuit(h, Diamond) {
-		return true
+func isRoyalFlush(h Hand) ([]Card, bool) {
+	for suit := minSuit; suit < maxSuit; suit++ {
+		if cards, ok := checkRoyalFlushForSuit(h, suit); ok {
+			return cards, true
+		}
 	}
-	return false
+	return nil, false
 }
 
 //800-StraightFlush
@@ -260,7 +273,7 @@ func isStraightFlush(h Hand) ([]Card, bool) {
 	if cards, ok := nOfSameSuit(h, 5); ok {
 		if areConsecutive(cards) {
 			return cards, true
-		}else if cards[len(cards)-1].Rank == Ace && cards[0].Rank == Two && areConsecutive(cards[0:4]){
+		} else if cards[len(cards)-1].Rank == Ace && cards[0].Rank == Two && areConsecutive(cards[0:4]) {
 			return cards, true
 		}
 	}
@@ -297,8 +310,8 @@ func isStraight(h Hand) ([]Card, bool) {
 		return nil, false
 	}
 	//check for Ace-case
-	if h[len(h)-1].Rank == Ace && h[0].Rank == Two && areConsecutive((h[:4])){
-		return append([]Card{h[len(h)-1]},h[0:4]...), true
+	if h[len(h)-1].Rank == Ace && h[0].Rank == Two && areConsecutive((h[:4])) {
+		return append([]Card{h[len(h)-1]}, h[0:4]...), true
 	}
 	//return the max possible hand
 	h = h[len(h)-5:]
@@ -327,59 +340,126 @@ func isTwoPair(h Hand) ([]Card, []Card, bool) {
 
 //100-OnePair
 func isOnePair(h Hand) ([]Card, bool) {
-	if cards, ok := nOfSameRank(h, 1); ok {
+	if cards, ok := nPair(h, 1); ok {
 		return cards, true
 	}
 	return nil, false
 }
 
-func Score(p Player) float64 {
+func Score(p Player) []Result {
 	sort.Slice(p.TwoCards, Less(p.TwoCards))
 	sort.Slice(p.SevenCards, Less(p.SevenCards))
 
 	ans := float64(0)
-	if ok := isRoyalFlush(p.SevenCards); ok {
-		fmt.Println("**** RoyalFlush ****")
-		return float64(RoyalFlush)
-	} else if cards, ok := isStraightFlush(p.SevenCards); ok {
-		fmt.Println("**** StraightFlush ****")
-		ans = float64(StraightFlush) + normalizedScore(cards, 90)
-	} else if cards, ok := isFourOfAKind(p.SevenCards); ok {
-		ans = FourOfAKind + normalizedScore(cards, 90)
-		fmt.Println("**** FourOfAKind ****")
-	} else if cards3, cards2, ok := isFullHouse(p.SevenCards); ok {
-		fmt.Printf("---- cards3: %+v\n", cards3)
-		fmt.Printf("---- cards2: %+v\n", cards2)
-		ans = FullHouse + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
-		fmt.Println("**** FullHouse ****")
-	} else if cards, ok := isFlush(p.SevenCards); ok {
-		ans = Flush + normalizedScore(cards, 90)
-		fmt.Println("**** Flush ****")
-	} else if cards, ok := isStraight(p.SevenCards); ok { 
-		ans = Straight + normalizedScore(cards, 90)
-		fmt.Println("**** Straight ****")
-	} else if cards, ok := isThreeOfAKind(p.SevenCards); ok {
-		ans = ThreeOfAKind + normalizedScore(cards, 90)
-		fmt.Println("**** ThreeOfAKind ****")
-	} else if cards1, cards2, ok := isTwoPair(p.SevenCards); ok {
-		ans = TwoPair + normalizedScore(cards1, 45) + normalizedScore(cards2, 45)
-		fmt.Println("**** TwoPair ****")
-	} else if cards, ok := isOnePair(p.SevenCards); ok {
-		ans = OnePair + normalizedScore(cards, 90)
-		fmt.Println("**** OnePair ****")
-	} else {
-		fmt.Println("**** HighCard ****")
+	result := []Result(nil)
+	if cards, ok := isRoyalFlush(p.SevenCards); ok {
+		ans = float64(RoyalFlush)
+		result = append(result, Result{
+			HandType: "RoyalFlush",
+			Score: ans,
+			Cards: cards,
+		})
 	}
-	return ans + normalizedScore(p.TwoCards, 10)
+	if cards, ok := isStraightFlush(p.SevenCards); ok {
+		ans = float64(StraightFlush) + normalizedScore(cards, 90)
+		result = append(result, Result{
+			HandType: "StraightFlush",
+			Score: ans,
+			Cards: cards,
+		})
+	}
+	if cards, ok := isFourOfAKind(p.SevenCards); ok {
+		ans = FourOfAKind + normalizedScore(cards, 90)
+		result = append(result, Result{
+			HandType: "FourOfAKind",
+			Score: ans,
+			Cards: cards,
+		})
+	}
+	if cards3, cards2, ok := isFullHouse(p.SevenCards); ok {
+		ans = FullHouse + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
+		handCards := []Card(nil)
+		handCards = append(handCards, cards3...)
+		handCards = append(handCards, cards2...)
+		result = append(result, Result{
+			HandType: "FullHouse",
+			Score: ans,
+			Cards: handCards,
+		})
+	}
+	if cards, ok := isFlush(p.SevenCards); ok {
+		ans = Flush + normalizedScore(cards, 90)
+		result = append(result, Result{
+			HandType: "Flush",
+			Score: ans,
+			Cards: cards,
+		})
+	}
+	if cards, ok := isStraight(p.SevenCards); ok {
+		ans = Straight + normalizedScore(cards, 90)
+		result = append(result, Result{
+			HandType: "Straight",
+			Score: ans,
+			Cards: cards,
+		})
+	}
+	if cards, ok := isThreeOfAKind(p.SevenCards); ok {
+		ans = ThreeOfAKind + normalizedScore(cards, 90)
+		result = append(result, Result{
+			HandType: "ThreeOfAKind",
+			Score: ans,
+			Cards: cards,
+		})
+	}
+	if cards1, cards2, ok := isTwoPair(p.SevenCards); ok {
+		ans = TwoPair + normalizedScore(cards1, 45) + normalizedScore(cards2, 45)
+		handCards := []Card(nil)
+		handCards = append(handCards, cards1...)
+		handCards = append(handCards, cards2...)
+		result = append(result, Result{
+			HandType: "TwoPair",
+			Score: ans,
+			Cards: handCards,
+		})
+	}
+	if cards, ok := isOnePair(p.SevenCards); ok {
+		ans = OnePair + normalizedScore(cards, 90)
+		result = append(result, Result{
+			HandType: "OnePair",
+			Score: ans,
+			Cards: cards,
+		})
+	}
+	// ans += normalizedScore(p.TwoCards, 10)
+	ans = normalizedScore(p.TwoCards, 10)  //Change of approach, might be reverted 
+	result = append(result, Result{
+		HandType: "HighCard",
+		Score: ans,
+		Cards: []Card{p.TwoCards[1]},
+	})
+	result = append(result, Result{
+		HandType: "HighCard",
+		Score: ans,
+		Cards: []Card{p.TwoCards[0]},
+	})
+	return result
 }
 
-func GetWinner(p1, p2 Player, table Hand) int {
+func GetWinner(p1, p2 Player, table Hand) (int, string, []Card) {
 	p1.SevenCards = append(p1.TwoCards, table...)
 	p2.SevenCards = append(p2.TwoCards, table...)
 
-	if Score(p1) > Score(p2) {
-		return 1
+	r1 := Score(p1)
+	r2 := Score(p2)
+
+	for r1[0].Score == r2[0].Score  && len(r1) > 0 && len(r2) > 0 {
+		r1 = r1[1:]
+		r2 = r2[1:]
+	}
+
+	if r1[0].Score > r2[0].Score {
+		return 1, r1[0].HandType, r1[0].Cards
 	} else {
-		return 2
+		return 2, r2[0].HandType, r2[0].Cards
 	}
 }

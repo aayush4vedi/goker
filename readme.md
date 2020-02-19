@@ -42,7 +42,16 @@ Single Player-No bet, CLI
             - In FullHouse: BiggerHandRank(60(x3)+30(x2))
             - In TwoPair: BiggerHandRank(45+45)
             - In HighCard: BiggerHandRank = 0
+        - *Edge Case which led to change in Approcah*: What if the table cards have highest HandRank, showing it's rank to user is not justice(even though you're calculting user's Hand value in score calculation, but you cant show the **next best HandType**)
+        - **Solution:** Need to maintain all the Hand-matches(in descending order) into a `Queue` of `Result` struct; so that while comparing 2 players, keep on popping from queues while both are having same HandType.This is necessary because we know that our score is more than enough to give the correct result, but the user-satisfaction is not good with it- They need to SEE it to BELIEVE it.
+        - ```go
+            type Result struct{
+                HandType string
+                Score float64
+                Cards []Card
+            }
+        ```
         
-- [] Write Tests & Make all Green
+- [x] Write Tests & Make all Green
 
 ## itr#2.
