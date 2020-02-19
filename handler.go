@@ -11,11 +11,11 @@ import (
 type Suit uint8
 
 const (
-	_ Suit   = iota
-	Spade 
-	Club    
-	Diamond 
-	Heart   
+	_ Suit = iota
+	Spade
+	Club
+	Diamond
+	Heart
 )
 
 const (
@@ -49,10 +49,9 @@ const (
 	maxRank = Ace
 )
 
-
 var ranks = [...]Rank{Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace}
 
-var symbol = map[Rank]string{
+var symbolRank = map[Rank]string{
 	Two:   "2",
 	Three: "3",
 	Four:  "4",
@@ -66,10 +65,12 @@ var symbol = map[Rank]string{
 	Queen: "Q",
 	King:  "K",
 	Ace:   "A",
-	Spade: "♠",
-	Club:  "♣",
-	Diamond:"♦",
-	Heart: "♥",
+}
+var symbolSuit = map[Suit]string{
+	Spade:   "♠",
+	Club:    "♣",
+	Diamond: "♦",
+	Heart:   "♥",
 }
 
 type Card struct {
@@ -81,15 +82,15 @@ type Deck []Card
 
 type Hand []Card
 
-type Player struct{
-	FiveCards Hand
+type Player struct {
+	TwoCards   Hand
 	SevenCards Hand
 }
 
 func PrintCards(cards []Card) {
 	fmt.Printf("[")
 	for _, card := range cards {
-		fmt.Printf("{ %v%v }", symbol[card.Rank], symbol[card.Suit])
+		fmt.Printf("{ %v%v }", symbolRank[card.Rank], symbolSuit[card.Suit])
 	}
 	fmt.Printf("]\n")
 }
@@ -142,126 +143,139 @@ const (
 	HighCard      = 0
 )
 
-func areConsecutive(cards []Card) bool {  //NOTE: function takes sorted array
-	for i:= 0 ; i< len(cards) -1 ;i++{
-		if cards[i].Rank != cards[i+1].Rank{
+func areConsecutive(cards []Card) bool {
+	for i := 0; i < len(cards)-1; i++ {
+		if cards[i+1].Rank-cards[i].Rank != 1 {
 			return false
 		}
 	}
 	return true
 }
 
-func intersection(a, b []Card) (c []Card) {
+func intersection(a, b []Card) []Card { //NOTE: pass the smaller slice in `a`
 	m := make(map[Card]bool)
-
+	c := []Card(nil)
 	for _, item := range a {
-			m[item] = true
+		m[item] = true
 	}
 
 	for _, item := range b {
-			if _, ok := m[item]; !ok {
-					c = append(c, item)
-			}
+		if _, ok := m[item]; !ok {
+			c = append(c, item)
+		}
 	}
-	return
+	return c
 }
 
-func nOfSameSuit(h Hand, n int)([]Card, bool){
+func nOfSameSuit(h Hand, n int) ([]Card, bool) {
 	m := make(map[Suit][]Card)
-	for i := len(h)-1; i>=0 ;i-- {
+	for i := len(h) - 1; i >= 0; i-- {
 		m[h[i].Suit] = append(m[h[i].Suit], h[i])
-		
 		if len(m[h[i].Suit]) == n {
-			return m[h[i].Suit], false
+			sort.Slice(m[h[i].Suit], Less(m[h[i].Suit]))
+			return m[h[i].Suit] , true
 		}
 	}
 	return nil, false
 }
 
-func nOfSameRank(h Hand, n int)([]Card, bool){ //Always returns the hieghst cards
+func nOfSameRank(h Hand, n int) ([]Card, bool) {
 	m := make(map[Rank][]Card)
-	for i := len(h)-1; i>=0 ;i-- {
+	for i := len(h) - 1; i >= 0; i-- {
 		m[h[i].Rank] = append(m[h[i].Rank], h[i])
-		
 		if len(m[h[i].Rank]) == n {
-			return m[h[i].Rank], false
+			sort.Slice(m[h[i].Rank], Less(m[h[i].Rank]))
+			return m[h[i].Rank] , true
 		}
 	}
 	return nil, false
 }
-
-func nPair(h Hand, n int)([]Card, bool){
+func nPair(h Hand, n int) ([]Card, bool) {
 	ret := []Card(nil)
 	cnt := 0
-	for i:= len(h)-1 ; i>= 0; i-- {
-		if h[i] == h[i-1] {
-			cnt ++
+	for i := len(h) - 1; i >= 1; i-- {
+		if h[i].Rank == h[i-1].Rank {
+			cnt++
 			ret = append(ret, h[i], h[i-1])
 			i--
-		}
-		if cnt == n {
-			return ret, true
+			if cnt == n {
+				return ret, true
+			}
+		}else{
+			cnt = 0
+			ret = nil
 		}
 	}
 	return nil, false
 }
 
-
-func normalizedScore(cards []Card, n int) int{
-	cardScore, normalizer := 0 , 0
-	for i, c := range cards{
-		cardScore += math.Pow(13,i)*(c.Rank - 2)
-		normalizer += math.Pow(13,i)*12
+func normalizedScore(cards []Card, n int) float64 {
+	cardScore, normalizer := float64(0), float64(0)
+	for i, c := range cards {
+		cardScore += (math.Pow(13, float64(i)) * (float64(c.Rank)))
+		normalizer += math.Pow(13, float64(i)) * 14
 	}
-	return (cardScore*n)/(normalizer*100)
+	return float64((cardScore * float64(n)) / normalizer)
+}
+
+func (h Hand) contains(card Card) bool {
+	for _, c := range h {
+		if (c.Suit == card.Suit) && (c.Rank == card.Rank) {
+			return true
+		}
+	}
+	return false
 }
 
 
+func nonRepeatingCards(h Hand) Hand {
+	var ret Hand
+	m := make(map[Rank]bool)
+	for _, card := range h {
+		if _, ok := m[card.Rank]; !ok {
+			ret = append(ret, card)
+			m[card.Rank] = true
+		}
+	}
+	return ret
+}
+
+func checkRoyalFlushForSuit(h Hand, s Suit) bool {
+	if h.contains(Card{Suit: s, Rank: Ten}) && h.contains(Card{Suit: s, Rank: Jack}) && h.contains(Card{Suit: s, Rank: Queen}) && h.contains(Card{Suit: s, Rank: King}) && h.contains(Card{Suit: s, Rank: Ace}) {
+		return true
+	}
+	return false
+}
+
 //900-RoyalFlush
-func isRoyalFlush(h Hand) bool { //TODO: make function
-	if ((h.contains(Card{Suit: Spade, Rank: Ten}) && h.contains(Card{Suit: Spade, Rank: Jack}) && h.contains(Card{Suit: Spade, Rank: Queen}) && h.contains(Card{Suit: Spade, Rank: King}) && h.contains(Card{Suit: Spade, Rank: Ace}))
-	|| (h.contains(Card{Suit: Club, Rank: Ten}) && h.contains(Card{Suit: Club, Rank: Jack}) && h.contains(Card{Suit: Club, Rank: Queen}) && h.contains(Card{Suit: Club, Rank: King}) && h.contains(Card{Suit: Club, Rank: Ace}))
-	|| (h.contains(Card{Suit: Diamond, Rank: Ten}) && h.contains(Card{Suit: Diamond, Rank: Jack}) && h.contains(Card{Suit: Diamond, Rank: Queen}) && h.contains(Card{Suit: Diamond, Rank: King}) && h.contains(Card{Suit: Diamond, Rank: Ace}))
-	|| (h.contains(Card{Suit: Heart, Rank: Ten}) && h.contains(Card{Suit: Heart, Rank: Jack}) && h.contains(Card{Suit: Heart, Rank: Queen}) && h.contains(Card{Suit: Heart, Rank: King}) && h.contains(Card{Suit: Heart, Rank: Ace}))) {
+func isRoyalFlush(h Hand) bool {
+	if checkRoyalFlushForSuit(h, Spade) || checkRoyalFlushForSuit(h, Club) || checkRoyalFlushForSuit(h, Heart) || checkRoyalFlushForSuit(h, Diamond) {
 		return true
 	}
 	return false
 }
 
 //800-StraightFlush
-func isStraightFlush(h Hand)([]Card, bool){
-	//check if >=5 cards are of same suit
-	ret := []Card
-	m := make(map[Suit][]Card)
-	for _, card := range h{
-		m[card.Suit] = append(m[card.Suit], card)
-	}
-	for suit, count := range m{
-		if count>=5 {
-			ret = m[suit]
+func isStraightFlush(h Hand) ([]Card, bool) {
+	if cards, ok := nOfSameSuit(h, 5); ok {
+		if areConsecutive(cards) {
+			return cards, true
+		}else if cards[len(cards)-1].Rank == Ace && cards[0].Rank == Two && areConsecutive(cards[0:4]){
+			return cards, true
 		}
-	}
-	if len(ret) <5 {
-		return nil, false
-	}
-	ret =  ret[len(ret)-5:]
-	
-	//check for AP
-	if areConsecutive(ret) {
-		return ret, true
 	}
 	return nil, false
 }
 
 //700-FourOfAKind
-func isFourOfAKind(h Hand)([]Card, bool){
+func isFourOfAKind(h Hand) ([]Card, bool) {
 	return nOfSameRank(h, 4)
 }
 
 //600-FullHouse
-func isFullHouse(h Hand)([]Card, []Card, bool){
+func isFullHouse(h Hand) ([]Card, []Card, bool) {
 	cards3, ok3 := nOfSameRank(h, 3)
-	h = intersection(h, cards3)
+	h = intersection(cards3, h)
 	cards2, ok2 := nOfSameRank(h, 2)
 	if ok2 && ok3 {
 		return cards3, cards2, true
@@ -270,82 +284,98 @@ func isFullHouse(h Hand)([]Card, []Card, bool){
 }
 
 //500-Flush
-func isFlush(h Hand)([]Card, bool){
+func isFlush(h Hand) ([]Card, bool) {
 	return nOfSameSuit(h, 5)
 }
 
 //400-Straight
-func isStraight(h Hand)([]Card, bool){
-	for i := 0 ;i<3; i++ {
-		_h := h[len(h)-5-i:len(h)-i]
-		if areConsecutive(_h){
-			return _h, ture
-		}
+func isStraight(h Hand) ([]Card, bool) {
+	//first form slice of non-repeating cards
+	h = nonRepeatingCards(h)
+	//check size >= 5; if yes take the last 5 elements
+	if len(h) < 5 {
+		return nil, false
+	}
+	//check for Ace-case
+	if h[len(h)-1].Rank == Ace && h[0].Rank == Two && areConsecutive((h[:4])){
+		return append([]Card{h[len(h)-1]},h[0:4]...), true
+	}
+	//return the max possible hand
+	h = h[len(h)-5:]
+	//check if areConsecutive
+	if areConsecutive(h) {
+		return h, true
 	}
 	return nil, false
 }
 
-
 //300-ThreeOfAKind
-func isThreeOfAKind(h Hand)([]Card, bool){
+func isThreeOfAKind(h Hand) ([]Card, bool) {
 	return nOfSameRank(h, 3)
 }
 
 //200-TwoPair
-func isTwoPair(h Hand)([]Card, bool){
-	return nPair(h,2)
+func isTwoPair(h Hand) ([]Card, []Card, bool) {
+	cards1, ok1 := nPair(h, 1)
+	h = intersection(cards1, h)
+	cards2, ok2 := nPair(h, 1)
+	if ok1 && ok2 {
+		return cards1, cards2, true
+	}
+	return nil, nil, false
 }
-
 
 //100-OnePair
-func isOnePair(h Hand)([]Card, bool){
-	return nPair(h,1)
+func isOnePair(h Hand) ([]Card, bool) {
+	if cards, ok := nOfSameRank(h, 1); ok {
+		return cards, true
+	}
+	return nil, false
 }
 
+func Score(p Player) float64 {
+	sort.Slice(p.TwoCards, Less(p.TwoCards))
+	sort.Slice(p.SevenCards, Less(p.SevenCards))
 
-func Score(p Player) int { 
-	sort.Slice(p1.FiveCards, Less(p1.FiveCards))
-	sort.Slice(p2.FiveCards, Less(p2.FiveCards))
-	sort.Slice(p1.SevenCards, Less(p1.SevenCards))
-	sort.Slice(p2.SevenCards, Less(p2.SevenCards))
-
-	ans := 0
-	if ok := isRoyalFlush(p.SevenCards);ok {
-		return RoyalFlush
+	ans := float64(0)
+	if ok := isRoyalFlush(p.SevenCards); ok {
+		fmt.Println("**** RoyalFlush ****")
+		return float64(RoyalFlush)
+	} else if cards, ok := isStraightFlush(p.SevenCards); ok {
+		fmt.Println("**** StraightFlush ****")
+		ans = float64(StraightFlush) + normalizedScore(cards, 90)
+	} else if cards, ok := isFourOfAKind(p.SevenCards); ok {
+		ans = FourOfAKind + normalizedScore(cards, 90)
+		fmt.Println("**** FourOfAKind ****")
+	} else if cards3, cards2, ok := isFullHouse(p.SevenCards); ok {
+		fmt.Printf("---- cards3: %+v\n", cards3)
+		fmt.Printf("---- cards2: %+v\n", cards2)
+		ans = FullHouse + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
+		fmt.Println("**** FullHouse ****")
+	} else if cards, ok := isFlush(p.SevenCards); ok {
+		ans = Flush + normalizedScore(cards, 90)
+		fmt.Println("**** Flush ****")
+	} else if cards, ok := isStraight(p.SevenCards); ok { 
+		ans = Straight + normalizedScore(cards, 90)
+		fmt.Println("**** Straight ****")
+	} else if cards, ok := isThreeOfAKind(p.SevenCards); ok {
+		ans = ThreeOfAKind + normalizedScore(cards, 90)
+		fmt.Println("**** ThreeOfAKind ****")
+	} else if cards1, cards2, ok := isTwoPair(p.SevenCards); ok {
+		ans = TwoPair + normalizedScore(cards1, 45) + normalizedScore(cards2, 45)
+		fmt.Println("**** TwoPair ****")
+	} else if cards, ok := isOnePair(p.SevenCards); ok {
+		ans = OnePair + normalizedScore(cards, 90)
+		fmt.Println("**** OnePair ****")
+	} else {
+		fmt.Println("**** HighCard ****")
 	}
-	if cards, ok := isStraightFlush(p.SevenCards);ok{
-		ans =  StraightFlush + normalizedScore(cards, 90)
-	}
-	if cards, ok := isFourOfAKind(p.SevenCards);ok{
-		ans =  FourOfAKind + normalizedScore(cards, 90)
-	}
-	if cards3, cards2, ok := isFullHouse(p.SevenCards);ok{
-		ans =  FourOfAKind + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
-	}
-	if cards, ok := isFlush(p.SevenCards);ok{
-		ans =  Flush + normalizedScore(cards, 90)
-	}
-	if cards, ok := isStraight(p.SevenCards);ok{
-		ans =  Straight + normalizedScore(cards, 90)
-	}
-	if cards, ok := isThreeOfAKind(p.SevenCards);ok{
-		ans =  ThreeOfAKind + normalizedScore(cards, 90)
-	}
-	if cards1, cards2, ok := isTwoPair(p.SevenCards);ok{
-		ans =  TwoPair + normalizedScore(cards1, 45)+ normalizedScore(cards2, 45)
-	}
-	if cards, ok := isOnePair(p.SevenCards);ok{
-		ans =  OnePair + normalizedScore(cards, 90)
-	}
-	//else HighCard
-
-	return ans + normalizedScore(p.FiveCards, 10)
+	return ans + normalizedScore(p.TwoCards, 10)
 }
-
 
 func GetWinner(p1, p2 Player, table Hand) int {
-	p1.SevenCards = append(p1.FiveCards, table...)
-	p2.SevenCards = append(p2.FiveCards, table...)
+	p1.SevenCards = append(p1.TwoCards, table...)
+	p2.SevenCards = append(p2.TwoCards, table...)
 
 	if Score(p1) > Score(p2) {
 		return 1

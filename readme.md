@@ -11,7 +11,7 @@ Single Player-No bet, CLI
     - [x] Deck Generation
     - [x] Deck Shuffle
     - [x] Assign cards: table, p1, p2
-- [-] **Evaluator Score** 
+- [x] **Evaluator Score** 
     - Possible Ways: 
         1. 52!/(7!*45!) Look-up table 
         2. some over-the-head x13 conversion logic 
@@ -19,8 +19,8 @@ Single Player-No bet, CLI
         - The idea is to give results firstly on the basis of HandRank only.But in case of tie, we don't want to go back to that Hand & compare all the tied-hands(lol).So give each hand a score, which reflects both: HandRank & a (normalized) score(b/w 0-100) based on cards in the hand, because once the HandRank is same, all that remains to compare is who's got bigger cards.
         - Out of 7 cards(5@table + 2@player), check if any 5 exist in a Hand(in decreasing order - ofcourse), if yes; calculate score as below:
         - Score = HandRankScore + NormalizedCardsScore
-        - 1. HandRankScore:
-              | HandRank |Score|
+        - 1. HandRankValue:
+              | HandRank |Value|
               | ---------| ----|
               | HighCard| 0 |
               | OnePair | 100 |
@@ -43,10 +43,6 @@ Single Player-No bet, CLI
             - In TwoPair: BiggerHandRank(45+45)
             - In HighCard: BiggerHandRank = 0
         
-
-
-
-
-- [] Declare winner
+- [] Write Tests & Make all Green
 
 ## itr#2.
