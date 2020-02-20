@@ -539,14 +539,27 @@ func (game *Game) ActionHandler(action Action, val *Money) {
 			game.MainPot.value += *val
 			//NOTE: assuming p1 by default for now
 			game.Players[0].chips -= *val
-			game.isRaised = true
+			// game.isRaised = true  //Uncomment when multiplayer mode is active
+			//Calling `Call` .Fix when multiplater
+			for i := 1; i < len(game.Players); i++ {
+				if game.Players[i].chips >= *val {
+					game.Players[i].chips -= *val
+					game.MainPot.value += *val
+				} else {
+					game.Players[i].chips = 0
+					game.MainPot.value += game.Players[i].chips
+				}
+			}
 		}
 	case Fold:
 		//NOTE: assuming p1 by default for now
 		fmt.Printf("=>> Folding you out in this game. You have %v chips remaining\n", game.Players[0].chips)
 		os.Exit(1)
 	case AllIn:
-		game.isRaised = true
+		// game.isRaised = true  //Uncomment when multiplayer mode is active
+		game.MainPot.value += game.Players[0].chips
+		*val = game.Players[0].chips
+		game.Players[0].chips = 0
 	}
 	fmt.Printf("==== Pot Value: %v\n", game.MainPot.value)
 }
