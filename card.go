@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"sort"
 	"time"
 )
@@ -76,11 +77,6 @@ type Deck []Card
 
 type Hand []Card
 
-type Player struct {
-	TwoCards   Hand
-	SevenCards Hand
-}
-
 type Result struct {
 	HandType string
 	Score    float64
@@ -134,6 +130,8 @@ var valuehandType = map[HandType]float64{
 	OnePair:       100,
 	HighCard:      0,
 }
+
+const n, m int = 2, 5 //Number of Cards for player & table respectively
 
 func PrintCards(cards []Card) {
 	fmt.Printf("[")
@@ -374,12 +372,12 @@ func isOnePair(h Hand) ([]Card, bool) {
 }
 
 func Score(p Player) []Result {
-	sort.Slice(p.TwoCards, Less(p.TwoCards))
-	sort.Slice(p.SevenCards, Less(p.SevenCards))
+	sort.Slice(p.PocketCards, Less(p.PocketCards))
+	sort.Slice(p.CommunityCards, Less(p.CommunityCards))
 
 	ans := float64(0)
 	result := []Result(nil)
-	if cards, ok := isRoyalFlush(p.SevenCards); ok {
+	if cards, ok := isRoyalFlush(p.CommunityCards); ok {
 		ans = valuehandType[RoyalFlush]
 		result = append(result, Result{
 			HandType: symbolhandType[RoyalFlush],
@@ -387,7 +385,7 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	if cards, ok := isStraightFlush(p.SevenCards); ok {
+	if cards, ok := isStraightFlush(p.CommunityCards); ok {
 		ans = valuehandType[StraightFlush] + normalizedScore(cards, 90)
 		result = append(result, Result{
 			HandType: symbolhandType[StraightFlush],
@@ -395,7 +393,7 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	if cards, ok := isFourOfAKind(p.SevenCards); ok {
+	if cards, ok := isFourOfAKind(p.CommunityCards); ok {
 		ans = valuehandType[FourOfAKind] + normalizedScore(cards, 90)
 		result = append(result, Result{
 			HandType: symbolhandType[FourOfAKind],
@@ -403,7 +401,7 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	if cards3, cards2, ok := isFullHouse(p.SevenCards); ok {
+	if cards3, cards2, ok := isFullHouse(p.CommunityCards); ok {
 		ans = valuehandType[FullHouse] + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
 		handCards := []Card(nil)
 		handCards = append(handCards, cards3...)
@@ -414,7 +412,7 @@ func Score(p Player) []Result {
 			Cards:    handCards,
 		})
 	}
-	if cards, ok := isFlush(p.SevenCards); ok {
+	if cards, ok := isFlush(p.CommunityCards); ok {
 		ans = valuehandType[Flush] + normalizedScore(cards, 90)
 		result = append(result, Result{
 			HandType: symbolhandType[Flush],
@@ -422,7 +420,7 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	if cards, ok := isStraight(p.SevenCards); ok {
+	if cards, ok := isStraight(p.CommunityCards); ok {
 		ans = valuehandType[Straight] + normalizedScore(cards, 90)
 		result = append(result, Result{
 			HandType: symbolhandType[Straight],
@@ -430,7 +428,7 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	if cards, ok := isThreeOfAKind(p.SevenCards); ok {
+	if cards, ok := isThreeOfAKind(p.CommunityCards); ok {
 		ans = valuehandType[ThreeOfAKind] + normalizedScore(cards, 90)
 		result = append(result, Result{
 			HandType: symbolhandType[ThreeOfAKind],
@@ -438,7 +436,7 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	if cards1, cards2, ok := isTwoPair(p.SevenCards); ok {
+	if cards1, cards2, ok := isTwoPair(p.CommunityCards); ok {
 		ans = valuehandType[TwoPair] + normalizedScore(cards1, 45) + normalizedScore(cards2, 45)
 		handCards := []Card(nil)
 		handCards = append(handCards, cards1...)
@@ -449,7 +447,7 @@ func Score(p Player) []Result {
 			Cards:    handCards,
 		})
 	}
-	if cards, ok := isOnePair(p.SevenCards); ok {
+	if cards, ok := isOnePair(p.CommunityCards); ok {
 		ans = valuehandType[OnePair] + normalizedScore(cards, 90)
 		result = append(result, Result{
 			HandType: symbolhandType[OnePair],
@@ -457,24 +455,24 @@ func Score(p Player) []Result {
 			Cards:    cards,
 		})
 	}
-	// ans += normalizedScore(p.TwoCards, 10)
-	ans = normalizedScore(p.TwoCards, 10) //Change of approach, might be reverted
+	// ans += normalizedScore(p.PocketCards, 10)
+	ans = normalizedScore(p.PocketCards, 10) //Change of approach, might be reverted
 	result = append(result, Result{
 		HandType: symbolhandType[HighCard],
 		Score:    ans,
-		Cards:    []Card{p.TwoCards[1]},
+		Cards:    []Card{p.PocketCards[1]},
 	})
 	result = append(result, Result{
 		HandType: symbolhandType[HighCard],
 		Score:    ans,
-		Cards:    []Card{p.TwoCards[0]},
+		Cards:    []Card{p.PocketCards[0]},
 	})
 	return result
 }
 
 func GetWinner(p1, p2 Player, table Hand) (int, string, []Card) {
-	p1.SevenCards = append(p1.TwoCards, table...)
-	p2.SevenCards = append(p2.TwoCards, table...)
+	p1.CommunityCards = append(p1.PocketCards, table...)
+	p2.CommunityCards = append(p2.PocketCards, table...)
 
 	r1 := Score(p1)
 	r2 := Score(p2)
@@ -489,4 +487,155 @@ func GetWinner(p1, p2 Player, table Hand) (int, string, []Card) {
 	} else {
 		return 2, r2[0].HandType, r2[0].Cards
 	}
+}
+
+func containsAction(actions []Action, x Action) (int, bool) {
+	for i, a := range actions {
+		if x == a {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
+func (game *Game) ActionHandler(action Action, val *Money) {
+	switch action {
+	case PutBlind:
+		game.MainPot.value += BLIND * Money(len(game.Players))
+		for i := range game.Players {
+			game.Players[i].chips -= BLIND
+		}
+	case SitOut:
+		//NOTE: assuming p1 by default for now
+		fmt.Printf("=>> Sittin you out in this game. You have %v chips remaining\n", game.Players[0].chips)
+		os.Exit(0)
+	case Call:
+		if game.isRaised {
+			//NOTE: assuming p1 by default for now
+			for i := 1; i < len(game.Players); i++ {
+				if game.Players[i].chips >= *val {
+					game.Players[i].chips -= *val
+					game.MainPot.value += *val
+				} else {
+					game.Players[i].chips = 0
+					game.MainPot.value += game.Players[i].chips
+				}
+			}
+			game.isRaised = false
+		} else {
+			fmt.Printf("There is no Raise by anyone.Wrong move. Retry input.\n")
+			game.waitUserInput(Same)
+		}
+	case Check:
+		if game.isRaised {
+			fmt.Printf("There is a Raise in game.Can't Check. Retry input.\n")
+			game.waitUserInput(Same)
+		}
+	case Raise:
+		if game.Players[0].chips < *val {
+			fmt.Printf("Not enough money.Go for a lower raise or All-In. Retry input.\n")
+			game.waitUserInput(Same)
+		} else {
+			game.MainPot.value += *val
+			//NOTE: assuming p1 by default for now
+			game.Players[0].chips -= *val
+			game.isRaised = true
+		}
+	case Fold:
+		//NOTE: assuming p1 by default for now
+		fmt.Printf("=>> Folding you out in this game. You have %v chips remaining\n", game.Players[0].chips)
+		os.Exit(1)
+	case AllIn:
+		game.isRaised = true
+	}
+	fmt.Printf("==== Pot Value: %v\n", game.MainPot.value)
+}
+
+func (game *Game) waitUserInput(e Event) {
+	var input Action
+	var val Money = 0
+	fmt.Printf("=== Step: %v ===\n", eventName[e])
+	fmt.Printf("Possible Actions:(Press Accordingly) . Always press `0` to quit\n")
+	for _, a := range validAction[e] {
+		fmt.Printf("# For `%v` press `%v`\n", actionName[a], a)
+	}
+Here:
+	fmt.Scanf("%d\n", &input)
+	if input == 0 {
+		fmt.Println(" -_- -_- -_- Fuck you.Bye! -_- -_- -_-")
+		os.Exit(1)
+	} else if _, ok := containsAction(validAction[e], input); !ok {
+		fmt.Println("Sorry, I didn't understand that input.Try again")
+		goto Here
+	} else if input == Raise {
+		fmt.Println(" Raise by how much?")
+		fmt.Scanf("%d\n", &val)
+	}
+	//Action Handler
+	game.ActionHandler(input, &val)
+}
+
+//TODO: make init()for this
+var p1 = Player{
+	chips: STAKES,
+}
+var p2 = Player{
+	chips: STAKES,
+}
+
+var table Hand
+
+var game = Game{
+	MainPot: MainPot{
+		value: 0,
+	},
+	Players:  []Player{p1, p2},
+	isRaised: false,
+}
+
+func Play() {
+	deck := NewDeck()
+
+	fmt.Printf("STARTING GAME.You have %v chips\n", game.Players[0].chips)
+	//NOTE: assue we are playins as p1 for now
+
+	game.waitUserInput(Ante)
+
+	game.waitUserInput(BeforePocketDraw)
+
+	p1.PocketCards, deck = GetHand(n, deck)
+	p2.PocketCards, deck = GetHand(n, deck)
+
+	fmt.Printf(">> p1 cards: ")
+	PrintCards(p1.PocketCards)
+	fmt.Printf(">> p2 cards: ")
+	PrintCards(p2.PocketCards)
+
+	game.waitUserInput(TableDraw0)
+	table, deck = GetHand(3, deck)
+	fmt.Printf(">> table cards: ")
+	PrintCards(table)
+
+	game.waitUserInput(TableDraw1)
+	var t []Card
+	t, deck = GetHand(1, deck)
+	table = append(table, t...)
+	fmt.Printf(">> table cards: ")
+	PrintCards(table)
+
+	game.waitUserInput(TableDraw2)
+	t, deck = GetHand(1, deck)
+	table = append(table, t...)
+	fmt.Printf(">> table cards: ")
+	PrintCards(table)
+
+	game.waitUserInput(BeforeShowdown)
+
+	winner, handType, hand := GetWinner(p1, p2, table)
+	fmt.Printf("Player %v won due to higher hand: %v - ", winner, handType)
+	PrintCards(hand)
+	game.Players[winner-1].chips += game.MainPot.value
+	game.MainPot.value = 0
+	fmt.Printf("GAME ENDED.You(p1) have %v chips\n", game.Players[0].chips)
+	fmt.Printf("GAME ENDED.P2 has %v chips\n", game.Players[1].chips)
 }

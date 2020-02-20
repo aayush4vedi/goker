@@ -6,6 +6,9 @@ Poker in Go.
 * [joker](https://github.com/notnil/joker)
 * [joker-ui](https://jspoker.net/Room/Index/3)
 
+## References
+* [Poker Terms](https://www.wsop.com/poker-terms/)
+
 ## itr#1. 
 Single Player-No bet, CLI
 

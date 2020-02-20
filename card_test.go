@@ -54,7 +54,7 @@ func TestRoyalFlush(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < RoyalFlush {
+	if score < valuehandType[RoyalFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -107,7 +107,7 @@ func TestStraightFlushLow(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < StraightFlush || score > RoyalFlush {
+	if score < valuehandType[StraightFlush] || score > valuehandType[RoyalFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -160,7 +160,7 @@ func TestStraightFlushHigh(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < StraightFlush || score > RoyalFlush {
+	if score < valuehandType[StraightFlush] || score > valuehandType[RoyalFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -213,7 +213,7 @@ func TestStraightFlushWithAce(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < StraightFlush || score > RoyalFlush {
+	if score < valuehandType[StraightFlush] || score > valuehandType[RoyalFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -266,7 +266,7 @@ func TestFourOfAKindHigh(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < FourOfAKind || score > StraightFlush {
+	if score < valuehandType[FourOfAKind] || score > valuehandType[StraightFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -319,7 +319,7 @@ func TestFourOfAKindLow(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < FourOfAKind || score > StraightFlush {
+	if score < valuehandType[FourOfAKind] || score > valuehandType[StraightFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -372,7 +372,7 @@ func TestFullHouseLow(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < FullHouse || score > FourOfAKind {
+	if score < valuehandType[FullHouse] || score > valuehandType[FourOfAKind ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -425,7 +425,7 @@ func TestFullHouseHigh(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < FullHouse || score > FourOfAKind {
+	if score < valuehandType[FullHouse] || score > valuehandType[FourOfAKind ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -478,7 +478,7 @@ func TestFlush(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < Flush || score > FullHouse {
+	if score < valuehandType[Flush] || score > valuehandType[FullHouse ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -531,7 +531,7 @@ func TestStraight(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < Straight || score > Flush {
+	if score < valuehandType[Straight] || score > valuehandType[Flush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -584,7 +584,7 @@ func TestStraightWithAceAsOne(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < Straight || score > Flush {
+	if score < valuehandType[Straight] || score > valuehandType[Flush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -637,7 +637,7 @@ func TestStraightWithAceAsFourteen(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < Straight || score > Flush {
+	if score < valuehandType[Straight] || score > valuehandType[Flush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -690,7 +690,7 @@ func TestThreeOfAKind(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < ThreeOfAKind || score > Straight {
+	if score < valuehandType[ThreeOfAKind] || score > valuehandType[Straight ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -743,7 +743,7 @@ func TestTwoPair(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < TwoPair || score > ThreeOfAKind {
+	if score < valuehandType[TwoPair] || score > valuehandType[ThreeOfAKind ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -796,7 +796,7 @@ func TestOnePair(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < OnePair || score > TwoPair {
+	if score < valuehandType[OnePair] || score > valuehandType[TwoPair ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -852,7 +852,7 @@ func TestHighCard(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < HighCard || score > OnePair {
+	if score < valuehandType[HighCard] || score > valuehandType[OnePair ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -909,7 +909,7 @@ func TestScenario1(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < HighCard || score > RoyalFlush {
+	if score < valuehandType[HighCard] || score > valuehandType[RoyalFlush ]{
 		t.Error("Not landed in correct hand")
 	}
 }
@@ -965,7 +965,7 @@ func TestScenario2(t *testing.T) {
 		fmt.Printf(">> HandType: %v \t >> Score: %v \t >> Cards: ", r.HandType, r.Score)
 		PrintCards(r.Cards)
 	}
-	if score < HighCard || score > RoyalFlush {
+	if score < valuehandType[HighCard] || score > valuehandType[RoyalFlush]{
 		t.Error("Not landed in correct hand")
 	}
 }
