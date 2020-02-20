@@ -51,6 +51,42 @@ const (
 
 var ranks = [...]Rank{Two, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace}
 
+type HandType float64
+
+const (
+	_ HandType = iota
+	RoyalFlush
+	StraightFlush
+	FourOfAKind
+	FullHouse
+	Flush
+	Straight
+	ThreeOfAKind
+	TwoPair
+	OnePair
+	HighCard
+)
+
+type Card struct {
+	Rank
+	Suit
+}
+
+type Deck []Card
+
+type Hand []Card
+
+type Player struct {
+	TwoCards   Hand
+	SevenCards Hand
+}
+
+type Result struct {
+	HandType string
+	Score    float64
+	Cards    []Card
+}
+
 var symbolRank = map[Rank]string{
 	Two:   "2",
 	Three: "3",
@@ -73,24 +109,30 @@ var symbolSuit = map[Suit]string{
 	Heart:   "♥",
 }
 
-type Card struct {
-	Rank
-	Suit
+var symbolhandType = map[HandType]string{
+	RoyalFlush:    "RoyalFlush",
+	StraightFlush: "StraightFlush",
+	FourOfAKind:   "FourOfAKind",
+	FullHouse:     "FullHouse",
+	Flush:         "Flush",
+	Straight:      "Straight",
+	ThreeOfAKind:  "ThreeOfAKind",
+	TwoPair:       "TwoPair",
+	OnePair:       "OnePair",
+	HighCard:      "HighCard",
 }
 
-type Deck []Card
-
-type Hand []Card
-
-type Player struct {
-	TwoCards   Hand
-	SevenCards Hand
-}
-
-type Result struct {
-	HandType string
-	Score    float64
-	Cards    []Card
+var valuehandType = map[HandType]float64{
+	RoyalFlush:    900,
+	StraightFlush: 800,
+	FourOfAKind:   700,
+	FullHouse:     600,
+	Flush:         500,
+	Straight:      400,
+	ThreeOfAKind:  300,
+	TwoPair:       200,
+	OnePair:       100,
+	HighCard:      0,
 }
 
 func PrintCards(cards []Card) {
@@ -133,21 +175,6 @@ func Less(cards []Card) func(i, j int) bool {
 		return cards[i].Rank < cards[j].Rank
 	}
 }
-
-type HandType uint8
-
-const (
-	RoyalFlush    = 900
-	StraightFlush = 800
-	FourOfAKind   = 700
-	FullHouse     = 600
-	Flush         = 500
-	Straight      = 400
-	ThreeOfAKind  = 300
-	TwoPair       = 200
-	OnePair       = 100
-	HighCard      = 0
-)
 
 func areConsecutive(cards []Card) bool {
 	for i := 0; i < len(cards)-1; i++ {
@@ -353,94 +380,94 @@ func Score(p Player) []Result {
 	ans := float64(0)
 	result := []Result(nil)
 	if cards, ok := isRoyalFlush(p.SevenCards); ok {
-		ans = float64(RoyalFlush)
+		ans = valuehandType[RoyalFlush]
 		result = append(result, Result{
-			HandType: "RoyalFlush",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[RoyalFlush],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	if cards, ok := isStraightFlush(p.SevenCards); ok {
-		ans = float64(StraightFlush) + normalizedScore(cards, 90)
+		ans = valuehandType[StraightFlush] + normalizedScore(cards, 90)
 		result = append(result, Result{
-			HandType: "StraightFlush",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[StraightFlush],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	if cards, ok := isFourOfAKind(p.SevenCards); ok {
-		ans = FourOfAKind + normalizedScore(cards, 90)
+		ans = valuehandType[FourOfAKind] + normalizedScore(cards, 90)
 		result = append(result, Result{
-			HandType: "FourOfAKind",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[FourOfAKind],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	if cards3, cards2, ok := isFullHouse(p.SevenCards); ok {
-		ans = FullHouse + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
+		ans = valuehandType[FullHouse] + normalizedScore(cards3, 60) + normalizedScore(cards2, 30)
 		handCards := []Card(nil)
 		handCards = append(handCards, cards3...)
 		handCards = append(handCards, cards2...)
 		result = append(result, Result{
-			HandType: "FullHouse",
-			Score: ans,
-			Cards: handCards,
+			HandType: symbolhandType[FullHouse],
+			Score:    ans,
+			Cards:    handCards,
 		})
 	}
 	if cards, ok := isFlush(p.SevenCards); ok {
-		ans = Flush + normalizedScore(cards, 90)
+		ans = valuehandType[Flush] + normalizedScore(cards, 90)
 		result = append(result, Result{
-			HandType: "Flush",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[Flush],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	if cards, ok := isStraight(p.SevenCards); ok {
-		ans = Straight + normalizedScore(cards, 90)
+		ans = valuehandType[Straight] + normalizedScore(cards, 90)
 		result = append(result, Result{
-			HandType: "Straight",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[Straight],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	if cards, ok := isThreeOfAKind(p.SevenCards); ok {
-		ans = ThreeOfAKind + normalizedScore(cards, 90)
+		ans = valuehandType[ThreeOfAKind] + normalizedScore(cards, 90)
 		result = append(result, Result{
-			HandType: "ThreeOfAKind",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[ThreeOfAKind],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	if cards1, cards2, ok := isTwoPair(p.SevenCards); ok {
-		ans = TwoPair + normalizedScore(cards1, 45) + normalizedScore(cards2, 45)
+		ans = valuehandType[TwoPair] + normalizedScore(cards1, 45) + normalizedScore(cards2, 45)
 		handCards := []Card(nil)
 		handCards = append(handCards, cards1...)
 		handCards = append(handCards, cards2...)
 		result = append(result, Result{
-			HandType: "TwoPair",
-			Score: ans,
-			Cards: handCards,
+			HandType: symbolhandType[TwoPair],
+			Score:    ans,
+			Cards:    handCards,
 		})
 	}
 	if cards, ok := isOnePair(p.SevenCards); ok {
-		ans = OnePair + normalizedScore(cards, 90)
+		ans = valuehandType[OnePair] + normalizedScore(cards, 90)
 		result = append(result, Result{
-			HandType: "OnePair",
-			Score: ans,
-			Cards: cards,
+			HandType: symbolhandType[OnePair],
+			Score:    ans,
+			Cards:    cards,
 		})
 	}
 	// ans += normalizedScore(p.TwoCards, 10)
-	ans = normalizedScore(p.TwoCards, 10)  //Change of approach, might be reverted 
+	ans = normalizedScore(p.TwoCards, 10) //Change of approach, might be reverted
 	result = append(result, Result{
-		HandType: "HighCard",
-		Score: ans,
-		Cards: []Card{p.TwoCards[1]},
+		HandType: symbolhandType[HighCard],
+		Score:    ans,
+		Cards:    []Card{p.TwoCards[1]},
 	})
 	result = append(result, Result{
-		HandType: "HighCard",
-		Score: ans,
-		Cards: []Card{p.TwoCards[0]},
+		HandType: symbolhandType[HighCard],
+		Score:    ans,
+		Cards:    []Card{p.TwoCards[0]},
 	})
 	return result
 }
@@ -452,7 +479,7 @@ func GetWinner(p1, p2 Player, table Hand) (int, string, []Card) {
 	r1 := Score(p1)
 	r2 := Score(p2)
 
-	for r1[0].Score == r2[0].Score  && len(r1) > 0 && len(r2) > 0 {
+	for r1[0].Score == r2[0].Score && len(r1) > 0 && len(r2) > 0 {
 		r1 = r1[1:]
 		r2 = r2[1:]
 	}

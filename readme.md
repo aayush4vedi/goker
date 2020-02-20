@@ -1,7 +1,10 @@
 # goker
 Poker in Go.
-[inspiration](https://github.com/notnil/joker)
-[ui](https://jspoker.net/Room/Index/3)
+
+## Inspirations
+* For Logic & good UI: [danielpaz6/Poker-Hand-Evaluator](https://github.com/danielpaz6/Poker-Hand-Evaluator)
+* [joker](https://github.com/notnil/joker)
+* [joker-ui](https://jspoker.net/Room/Index/3)
 
 ## itr#1. 
 Single Player-No bet, CLI
