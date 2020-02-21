@@ -609,6 +609,7 @@ var game = Game{
 func Play() {
 	deck := NewDeck()
 
+	fmt.Println("Playing as Player1")
 	fmt.Printf("STARTING GAME.You have %v chips\n", game.Players[0].chips)
 	//NOTE: assue we are playins as p1 for now
 
@@ -621,8 +622,8 @@ func Play() {
 
 	fmt.Printf(">> p1 cards: ")
 	PrintCards(p1.PocketCards)
-	fmt.Printf(">> p2 cards: ")
-	PrintCards(p2.PocketCards)
+	fmt.Printf(">> p2 cards:  *  * ")  //Redacting P2's cards
+	// PrintCards(p2.PocketCards)
 
 	game.waitUserInput(TableDraw0)
 	table, deck = GetHand(3, deck)

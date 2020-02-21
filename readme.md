@@ -1,6 +1,9 @@
 # goker
 Poker in Go.
 
+# How to run
+Clone the repo & run `go run goker/main.go` to play.
+
 ## Inspirations
 * For Logic & good UI: [danielpaz6/Poker-Hand-Evaluator](https://github.com/danielpaz6/Poker-Hand-Evaluator)
 * [joker](https://github.com/notnil/joker)
@@ -9,10 +12,10 @@ Poker in Go.
 ## References
 * [Poker Terms](https://www.wsop.com/poker-terms/)
 
-## itr#1. 
+## [x] itr#1. 
 Single Player-No bet, CLI
 
-### Task
+### Task 
 - [x] Draw Cards
     - [x] Deck Generation
     - [x] Deck Shuffle
@@ -60,4 +63,27 @@ Single Player-No bet, CLI
         
 - [x] Write Tests & Make all Green
 
-## itr#2.
+## [x] itr#2. 
+Single-player, Betting, CLI
+
+### Tasks
+- [x] Step-wise card assigning on table:
+    - [x] Support multiple user inputs as actions : {call, raise, fold} & add check if they are valid at that step.
+    - Events & their valid Actions:
+        - Ante : [PutBlind, SitOut]
+        - BeforePocketDraw : [Check, Raise, Call,Fold, AllIn]
+        - PocketDraw: nil
+        - TableDraw0 : [Check, Raise, Call,Fold, AllIn]
+        - TableDraw1 : [Call, Raise, Check,Fold, AllIn]
+        - TableDraw2 : [Call, Raise, Check,Fold, AllIn]
+        - BeforeShowdown: [Call, Raise, Check,Fold, AllIn]
+        - Showdown : nil
+- [x] BettingOn:
+    - Integrate actions with them.
+- [x] Card Redaction(for bot's cards)
+
+## Itr#3: Multiplayer, SingleTable, API : {in progress}
+- [] Money distribution logic : [idea]((https://github.com/danielpaz6/Poker-Hand-Evaluator))
+- [] Add new players
+- [] Multiple continuous games.
+- [] Connect with APIs.
