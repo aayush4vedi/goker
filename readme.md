@@ -2,20 +2,22 @@
 Poker in Go.
 
 # How to run
-Clone the repo & run `go run goker/main.go` to play.
+Clone the repo & run `go run goker/main.go` to start playing
 
-## Inspirations
+<p align="center">
+
+<img src="https://cdn.shopify.com/s/files/1/2022/6883/products/cards_on_table_1024x1024@2x.jpg?v=1557787138" height= "500px" >
+</p>
+
+### Inspirations
 * For Logic & good UI: [danielpaz6/Poker-Hand-Evaluator](https://github.com/danielpaz6/Poker-Hand-Evaluator)
 * [joker](https://github.com/notnil/joker)
 * [joker-ui](https://jspoker.net/Room/Index/3)
 
-## References
+### References
 * [Poker Terms](https://www.wsop.com/poker-terms/)
 
-## [x] itr#1. 
-Single Player-No bet, CLI
-
-### Task 
+## [x] itr#1: Single Player-No bet, CLI
 - [x] Draw Cards
     - [x] Deck Generation
     - [x] Deck Shuffle
@@ -58,13 +60,10 @@ Single Player-No bet, CLI
                 HandType string
                 Score float64
                 Cards []Card
-            }
-        ```
-        
+            }        
 - [x] Write Tests & Make all Green
 
-## [x] itr#2. 
-Single-player, Betting, CLI
+## [x] itr#2 : Single-player, Betting, CLI
 
 ### Tasks
 - [x] Step-wise card assigning on table:
