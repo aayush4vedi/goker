@@ -622,8 +622,8 @@ func Play() {
 
 	fmt.Printf(">> p1 cards: ")
 	PrintCards(p1.PocketCards)
-	fmt.Printf(">> p2 cards:  *  * ")  //Redacting P2's cards
-	// PrintCards(p2.PocketCards)
+	// fmt.Printf(">> p2 cards:  *  * ")  //Redacting P2's cards
+	PrintCards(p2.PocketCards)
 
 	game.waitUserInput(TableDraw0)
 	table, deck = GetHand(3, deck)
